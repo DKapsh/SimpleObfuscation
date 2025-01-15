@@ -1,10 +1,12 @@
 package com.plugins
 
+import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
 import com.plugins.tasks.CopyObfuscatorClass
+import com.plugins.visitors.ObfuscatorClassVisitorFactory
 
 class DemoPlugin : Plugin<Project> {
 
@@ -26,6 +28,10 @@ class DemoPlugin : Plugin<Project> {
                 }
 
                 variant.sources.java?.addGeneratedSourceDirectory(generateCodeTask, CopyObfuscatorClass::destinationDir)
+                variant.instrumentation.transformClassesWith(
+                    ObfuscatorClassVisitorFactory::class.java,
+                    InstrumentationScope.PROJECT
+                ){}
             }
         }
     }
