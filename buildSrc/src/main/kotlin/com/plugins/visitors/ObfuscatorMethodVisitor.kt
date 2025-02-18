@@ -16,19 +16,13 @@ internal class ObfuscatorMethodVisitor(
     ) {
         if (value is String) {
             val random = Random(System.nanoTime())
-            additionalStack += 5
+            additionalStack += 7
 
-            mv.visitTypeInsn(Opcodes.NEW, "java/lang/StringBuilder")
-            mv.visitInsn(Opcodes.DUP)
-            mv.visitMethodInsn(
-                Opcodes.INVOKESPECIAL,
-                "java/lang/StringBuilder",
-                "<init>",
-                "()V",
-                false
-            )
+            mv.visitLdcInsn(value.length)
+            mv.visitIntInsn(Opcodes.NEWARRAY, Opcodes.T_CHAR)
 
-            for (c in value.toCharArray()) {
+
+            for ((index, c) in value.toCharArray().withIndex()) {
                 val addKey = random.nextLong().absoluteValue
                 var mulKey = random.nextLong().absoluteValue
 
@@ -36,6 +30,8 @@ internal class ObfuscatorMethodVisitor(
                     mulKey++
                 }
                 val obfuscatedChar = Obfuscator.obfuscateChar(c, addKey, mulKey)
+                mv.visitInsn(Opcodes.DUP)
+                mv.visitLdcInsn(index)
                 mv.visitLdcInsn(obfuscatedChar)
 
                 mv.visitLdcInsn(addKey);
@@ -48,20 +44,14 @@ internal class ObfuscatorMethodVisitor(
                     false
                 )
 
-                mv.visitMethodInsn(
-                    Opcodes.INVOKEVIRTUAL,
-                    "java/lang/StringBuilder",
-                    "append",
-                    "(C)Ljava/lang/StringBuilder;",
-                    false
-                )
+                mv.visitInsn(Opcodes.CASTORE)
             }
 
             mv.visitMethodInsn(
-                Opcodes.INVOKEVIRTUAL,
-                "java/lang/StringBuilder",
-                "toString",
-                "()Ljava/lang/String;",
+                Opcodes.INVOKESTATIC,
+                "java/lang/String",
+                "valueOf",
+                "([C)Ljava/lang/String;",
                 false
             )
         } else {
